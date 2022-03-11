@@ -40,8 +40,8 @@ getInt64() = Int64
 
 @test Fruit.Type(Int32(0)) === Fruit.Type(0) === Fruit.Apple
 @test Fruit.Type(Int32(1)) === Fruit.Type(1) === Fruit.Banana
-@test_throws ArgumentError("invalid value 123 for Enum Fruit") Fruit.Type(Int32(123))
-@test_throws ArgumentError("invalid value 123 for Enum Fruit") Fruit.Type(123)
+@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.Type(Int32(123))
+@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.Type(123)
 
 @test Fruit.Apple < Fruit.Banana
 
@@ -56,7 +56,7 @@ let io = IOBuffer()
     seekstart(io)
     write(io, Int32(123))
     seekstart(io)
-    @test_throws ArgumentError("invalid value 123 for Enum Fruit") read(io, Fruit.Type)
+    @test_throws ArgumentError("invalid value for Enum Fruit: 123.") read(io, Fruit.Type)
 end
 
 let io = IOBuffer()
@@ -93,7 +93,7 @@ try
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
-    @test err.msg == "invalid EnumX.@enumx type specification: Fr + uit"
+    @test err.msg == "invalid EnumX.@enumx type specification: Fr + uit."
 end
 
 
@@ -113,5 +113,67 @@ end
 @test FruitBlock8.Type <: EnumX.Enum{Int8} <: Base.Enum{Int8}
 @test FruitBlock8.Apple === FruitBlock8.Type(0)
 @test FruitBlock8.Banana === FruitBlock8.Type(1)
+
+
+# Custom values
+@enumx FruitValues Apple = 1 Banana = (1 + 2) Orange
+@test FruitValues.Apple === FruitValues.Type(1)
+@test FruitValues.Banana === FruitValues.Type(3)
+@test FruitValues.Orange === FruitValues.Type(4)
+
+@enumx FruitValues8::Int8 Apple = -1 Banana = (1 + 2) Orange
+@test FruitValues8.Apple === FruitValues8.Type(-1)
+@test FruitValues8.Banana === FruitValues8.Type(3)
+@test FruitValues8.Orange === FruitValues8.Type(4)
+
+@enumx FruitValuesBlock begin
+    Apple = sum((1, 2, 3))
+    Banana
+end
+@test FruitValuesBlock.Apple === FruitValuesBlock.Type(6)
+@test FruitValuesBlock.Banana === FruitValuesBlock.Type(7)
+
+try
+    @macroexpand @enumx Fruit::Int8 Apple=typemax(Int8) Banana
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "value overflow for Enum Fruit: Fruit.Banana = -128."
+end
+try
+    @macroexpand @enumx Fruit::Int8 Apple="apple"
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "invalid value for Enum Fruit{Int8}: Fruit.Apple = \"apple\"."
+end
+try
+    @macroexpand @enumx Fruit::Int8 Apple=128
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "invalid value for Enum Fruit{Int8}: Fruit.Apple = 128."
+end
+try
+    @macroexpand @enumx Fruit::Int8 Apple()
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "invalid EnumX.@enumx entry: Apple()"
+end
+try
+    @macroexpand @enumx Fruit Apple=0 Banana=0
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "duplicate value for Enum Fruit: Fruit.Banana = 0, value already used for Fruit.Apple = 0."
+end
+try
+    @macroexpand @enumx Fruit Apple Apple
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "duplicate name for Enum Fruit: Fruit.Apple = 1, name already used for Fruit.Apple = 0."
+end
 
 end # testset
