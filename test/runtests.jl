@@ -96,4 +96,22 @@ catch err
     @test err.msg == "invalid EnumX.@enumx type specification: Fr + uit"
 end
 
+
+# Block syntax
+@enumx FruitBlock begin
+    Apple
+    Banana
+end
+@test FruitBlock.Type <: EnumX.Enum{Int32} <: Base.Enum{Int32}
+@test FruitBlock.Apple === FruitBlock.Type(0)
+@test FruitBlock.Banana === FruitBlock.Type(1)
+
+@enumx FruitBlock8::Int8 begin
+    Apple
+    Banana
+end
+@test FruitBlock8.Type <: EnumX.Enum{Int8} <: Base.Enum{Int8}
+@test FruitBlock8.Apple === FruitBlock8.Type(0)
+@test FruitBlock8.Banana === FruitBlock8.Type(1)
+
 end # testset

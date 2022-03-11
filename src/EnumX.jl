@@ -21,11 +21,17 @@ function enumx(_module_, name, args...)
         throw(ArgumentError("invalid EnumX.@enumx type specification: $(name)"))
     end
     name = modname
+    if length(args) == 1 && args[1] isa Expr && args[1].head === :block
+        syms = args[1].args
+    else
+        syms = args
+    end
     namemap = Dict{baseT,Symbol}()
     next = 0
-    for arg in args
-        @assert arg isa Symbol # TODO
-        namemap[next] = arg
+    for s in syms
+        s isa LineNumberNode && continue
+        s isa Symbol || throw(ArgumentError("invalid member expression: $(s)"))
+        namemap[next] = s
         next += 1
     end
     module_block = quote
