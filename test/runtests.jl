@@ -2,6 +2,9 @@
 
 using EnumX, Test
 
+const T16 = Int16
+getInt64() = Int64
+
 @testset "EnumX" begin
 
 # Basic
@@ -66,6 +69,31 @@ let io = IOBuffer()
     show(io, "text/plain", Fruit.Banana)
     str = String(take!(io))
     @test str == "Fruit.Banana = 1"
+end
+
+
+# Base type specification
+@enumx Fruit8::Int8 Apple
+@test Fruit8.Type <: EnumX.Enum{Int8} <: Base.Enum{Int8}
+@test Base.Enums.basetype(Fruit8.Type) === Int8
+@test Integer(Fruit8.Apple) === Int8(0)
+
+@enumx Fruit16::T16 Apple
+@test Fruit16.Type <: EnumX.Enum{Int16} <: Base.Enum{Int16}
+@test Base.Enums.basetype(Fruit16.Type) === Int16
+@test Integer(Fruit16.Apple) === Int16(0)
+
+@enumx Fruit64::getInt64() Apple
+@test Fruit64.Type <: EnumX.Enum{Int64} <: Base.Enum{Int64}
+@test Base.Enums.basetype(Fruit64.Type) === Int64
+@test Integer(Fruit64.Apple) == Int64(0)
+
+try
+    @macroexpand @enumx (Fr + uit) Apple
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "invalid EnumX.@enumx type specification: Fr + uit"
 end
 
 end # testset

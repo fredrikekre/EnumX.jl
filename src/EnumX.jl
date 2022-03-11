@@ -7,11 +7,21 @@ export @enumx
 abstract type Enum{T} <: Base.Enum{T} end
 
 macro enumx(args...)
-    return enumx(args...)
+    return enumx(__module__, args...)
 end
 
-function enumx(name, args...)
-    namemap = Dict{Int32,Symbol}()
+function enumx(_module_, name, args...)
+    if name isa Symbol
+        modname = name
+        baseT = Int32
+    elseif name isa Expr && name.head == :(::) && name.args[1] isa Symbol && length(name.args) == 2
+        modname = name.args[1]
+        baseT = Core.eval(_module_, name.args[2])
+    else
+        throw(ArgumentError("invalid EnumX.@enumx type specification: $(name)"))
+    end
+    name = modname
+    namemap = Dict{baseT,Symbol}()
     next = 0
     for arg in args
         @assert arg isa Symbol # TODO
@@ -19,13 +29,13 @@ function enumx(name, args...)
         next += 1
     end
     module_block = quote
-        primitive type Type <: Enum{Int32} 32 end
+        primitive type Type <: Enum{$(baseT)} $(sizeof(baseT) * 8) end
         let namemap = $(namemap)
             check_valid(x) = x in keys(namemap) ||
-                throw(ArgumentError("invalid value $(x) for Enum $($(QuoteNode(name)))"))
+                throw(ArgumentError("invalid value $(x) for Enum $($(QuoteNode(modname)))"))
             global function $(esc(:Type))(x::Integer)
                 check_valid(x)
-                return Base.bitcast($(esc(:Type)), convert(Int32, x))
+                return Base.bitcast($(esc(:Type)), convert($(baseT), x))
             end
             Base.Enums.namemap(::Base.Type{$(esc(:Type))}) = namemap
             Base.Enums.instances(::Base.Type{$(esc(:Type))}) =
@@ -37,7 +47,7 @@ function enumx(name, args...)
             Expr(:const, Expr(:(=), esc(v), Expr(:call, esc(:Type), k)))
         )
     end
-    return Expr(:toplevel, Expr(:module, false, esc(name), module_block), nothing)
+    return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), nothing)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
