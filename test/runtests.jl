@@ -14,9 +14,9 @@ const Ananab = -1
 
 @test Fruit isa Module
 @test Set(names(Fruit)) == Set([:Fruit])
-@test_broken Set(names(Fruit; all=true)) == Set([:Fruit, :Apple, :Banana, :Type])
-@test issubset(Set([:Fruit, :Apple, :Banana, :Type]), Set(names(Fruit; all=true)))
-@test Fruit.Type <: EnumX.Enum{Int32} <: Base.Enum{Int32}
+@test_broken Set(names(Fruit; all=true)) == Set([:Fruit, :Apple, :Banana, :T])
+@test issubset(Set([:Fruit, :Apple, :Banana, :T]), Set(names(Fruit; all=true)))
+@test Fruit.T <: EnumX.Enum{Int32} <: Base.Enum{Int32}
 @test !@isdefined(Apple)
 @test !@isdefined(Banana)
 
@@ -25,9 +25,9 @@ const Ananab = -1
 @test Fruit.Banana isa EnumX.Enum
 @test Fruit.Banana isa Base.Enum
 
-@test instances(Fruit.Type) === (Fruit.Apple, Fruit.Banana)
-@test Base.Enums.namemap(Fruit.Type) == Dict{Int32,Symbol}(0 => :Apple, 1 => :Banana)
-@test Base.Enums.basetype(Fruit.Type) == Int32
+@test instances(Fruit.T) === (Fruit.Apple, Fruit.Banana)
+@test Base.Enums.namemap(Fruit.T) == Dict{Int32,Symbol}(0 => :Apple, 1 => :Banana)
+@test Base.Enums.basetype(Fruit.T) == Int32
 
 @test Symbol(Fruit.Apple) === :Apple
 @test Symbol(Fruit.Banana) === :Banana
@@ -40,31 +40,31 @@ const Ananab = -1
 @test Fruit.Apple === Fruit.Apple
 @test Fruit.Banana === Fruit.Banana
 
-@test Fruit.Type(Int32(0)) === Fruit.Type(0) === Fruit.Apple
-@test Fruit.Type(Int32(1)) === Fruit.Type(1) === Fruit.Banana
-@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.Type(Int32(123))
-@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.Type(123)
+@test Fruit.T(Int32(0)) === Fruit.T(0) === Fruit.Apple
+@test Fruit.T(Int32(1)) === Fruit.T(1) === Fruit.Banana
+@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.T(Int32(123))
+@test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.T(123)
 
 @test Fruit.Apple < Fruit.Banana
 
 let io = IOBuffer()
     write(io, Fruit.Apple)
     seekstart(io)
-    @test read(io, Fruit.Type) === Fruit.Apple
+    @test read(io, Fruit.T) === Fruit.Apple
     seekstart(io)
     write(io, Fruit.Banana)
     seekstart(io)
-    @test read(io, Fruit.Type) === Fruit.Banana
+    @test read(io, Fruit.T) === Fruit.Banana
     seekstart(io)
     write(io, Int32(123))
     seekstart(io)
-    @test_throws ArgumentError("invalid value for Enum Fruit: 123.") read(io, Fruit.Type)
+    @test_throws ArgumentError("invalid value for Enum Fruit: 123.") read(io, Fruit.T)
 end
 
 let io = IOBuffer()
-    show(io, "text/plain", Fruit.Type)
+    show(io, "text/plain", Fruit.T)
     str = String(take!(io))
-    @test str == "Enum type Fruit.Type <: Enum{Int32} with 2 instances:\n Fruit.Apple  = 0\n Fruit.Banana = 1"
+    @test str == "Enum type Fruit.T <: Enum{Int32} with 2 instances:\n Fruit.Apple  = 0\n Fruit.Banana = 1"
     show(io, "text/plain", Fruit.Apple)
     str = String(take!(io))
     @test str == "Fruit.Apple = 0"
@@ -76,22 +76,22 @@ end
 
 # Base type specification
 @enumx Fruit8::Int8 Apple
-@test Fruit8.Type <: EnumX.Enum{Int8} <: Base.Enum{Int8}
-@test Base.Enums.basetype(Fruit8.Type) === Int8
+@test Fruit8.T <: EnumX.Enum{Int8} <: Base.Enum{Int8}
+@test Base.Enums.basetype(Fruit8.T) === Int8
 @test Integer(Fruit8.Apple) === Int8(0)
 
 @enumx FruitU8::UInt8 Apple # no overflow even if first is typemin(T)
-@test Base.Enums.basetype(FruitU8.Type) === UInt8
-@test FruitU8.Apple === FruitU8.Type(0)
+@test Base.Enums.basetype(FruitU8.T) === UInt8
+@test FruitU8.Apple === FruitU8.T(0)
 
 @enumx Fruit16::T16 Apple
-@test Fruit16.Type <: EnumX.Enum{Int16} <: Base.Enum{Int16}
-@test Base.Enums.basetype(Fruit16.Type) === Int16
+@test Fruit16.T <: EnumX.Enum{Int16} <: Base.Enum{Int16}
+@test Base.Enums.basetype(Fruit16.T) === Int16
 @test Integer(Fruit16.Apple) === Int16(0)
 
 @enumx Fruit64::getInt64() Apple
-@test Fruit64.Type <: EnumX.Enum{Int64} <: Base.Enum{Int64}
-@test Base.Enums.basetype(Fruit64.Type) === Int64
+@test Fruit64.T <: EnumX.Enum{Int64} <: Base.Enum{Int64}
+@test Base.Enums.basetype(Fruit64.T) === Int64
 @test Integer(Fruit64.Apple) == Int64(0)
 
 try
@@ -109,36 +109,36 @@ end
     Apple
     Banana
 end
-@test FruitBlock.Type <: EnumX.Enum{Int32} <: Base.Enum{Int32}
-@test FruitBlock.Apple === FruitBlock.Type(0)
-@test FruitBlock.Banana === FruitBlock.Type(1)
+@test FruitBlock.T <: EnumX.Enum{Int32} <: Base.Enum{Int32}
+@test FruitBlock.Apple === FruitBlock.T(0)
+@test FruitBlock.Banana === FruitBlock.T(1)
 
 @enumx FruitBlock8::Int8 begin
     Apple
     Banana
 end
-@test FruitBlock8.Type <: EnumX.Enum{Int8} <: Base.Enum{Int8}
-@test FruitBlock8.Apple === FruitBlock8.Type(0)
-@test FruitBlock8.Banana === FruitBlock8.Type(1)
+@test FruitBlock8.T <: EnumX.Enum{Int8} <: Base.Enum{Int8}
+@test FruitBlock8.Apple === FruitBlock8.T(0)
+@test FruitBlock8.Banana === FruitBlock8.T(1)
 
 
 # Custom values
 @enumx FruitValues Apple = 1 Banana = (1 + 2) Orange
-@test FruitValues.Apple === FruitValues.Type(1)
-@test FruitValues.Banana === FruitValues.Type(3)
-@test FruitValues.Orange === FruitValues.Type(4)
+@test FruitValues.Apple === FruitValues.T(1)
+@test FruitValues.Banana === FruitValues.T(3)
+@test FruitValues.Orange === FruitValues.T(4)
 
 @enumx FruitValues8::Int8 Apple = -1 Banana = (1 + 2) Orange
-@test FruitValues8.Apple === FruitValues8.Type(-1)
-@test FruitValues8.Banana === FruitValues8.Type(3)
-@test FruitValues8.Orange === FruitValues8.Type(4)
+@test FruitValues8.Apple === FruitValues8.T(-1)
+@test FruitValues8.Banana === FruitValues8.T(3)
+@test FruitValues8.Orange === FruitValues8.T(4)
 
 @enumx FruitValuesBlock begin
     Apple = sum((1, 2, 3))
     Banana
 end
-@test FruitValuesBlock.Apple === FruitValuesBlock.Type(6)
-@test FruitValuesBlock.Banana === FruitValuesBlock.Type(7)
+@test FruitValuesBlock.Apple === FruitValuesBlock.T(6)
+@test FruitValuesBlock.Banana === FruitValuesBlock.T(7)
 
 try
     @macroexpand @enumx Fruit::Int8 Apple=typemax(Int8) Banana
@@ -184,12 +184,12 @@ end
 
 # Duplicate values
 @enumx FruitDup Apple=0 Banana=0
-@test FruitDup.Apple === FruitDup.Banana === FruitDup.Type(0)
+@test FruitDup.Apple === FruitDup.Banana === FruitDup.T(0)
 
 let io = IOBuffer()
-    show(io, "text/plain", FruitDup.Type)
+    show(io, "text/plain", FruitDup.T)
     str = String(take!(io))
-    @test str == "Enum type FruitDup.Type <: Enum{Int32} with 2 instances:\n FruitDup.Apple  = 0\n FruitDup.Banana = 0"
+    @test str == "Enum type FruitDup.T <: Enum{Int32} with 2 instances:\n FruitDup.Apple  = 0\n FruitDup.Banana = 0"
     show(io, "text/plain", FruitDup.Apple)
     str = String(take!(io))
     @test str == "FruitDup.Apple = FruitDup.Banana = 0"
@@ -201,7 +201,38 @@ end
 
 # Initialize with previous instance name
 @enumx FruitPrev Elppa Banana=Elppa Orange=Ananab
-@test FruitPrev.Elppa === FruitPrev.Banana === FruitPrev.Type(0)
-@test FruitPrev.Orange === FruitPrev.Type(-1)
+@test FruitPrev.Elppa === FruitPrev.Banana === FruitPrev.T(0)
+@test FruitPrev.Orange === FruitPrev.T(-1)
+
+
+# Custom typename
+@enumx T=Typ FruitT Apple Banana
+@test isdefined(FruitT, :Typ)
+@test !isdefined(FruitT, :T)
+@test FruitT.Typ <: EnumX.Enum
+@test FruitT.Apple === FruitT.Typ(0)
+
+let io = IOBuffer()
+    io = IOBuffer()
+    show(io, "text/plain", FruitT.Typ)
+    str = String(take!(io))
+    @test str == "Enum type FruitT.Typ <: Enum{Int32} with 2 instances:\n FruitT.Apple  = 0\n FruitT.Banana = 1"
+end
+
+# Custom typename with quoted symbol
+@enumx T=:Typ FruitST Apple Banana
+@test isdefined(FruitST, :Typ)
+@test !isdefined(FruitST, :T)
+@test FruitST.Typ <: EnumX.Enum
+@test FruitST.Apple === FruitST.Typ(0)
+
+try
+    @macroexpand @enumx T=Apple Fruit Apple
+    error()
+catch err
+    err isa LoadError && (err = err.error)
+    @test err isa ArgumentError
+    @test err.msg == "instance name Fruit.Apple reserved for the Enum typename."
+end
 
 end # testset

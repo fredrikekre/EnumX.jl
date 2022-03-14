@@ -27,16 +27,26 @@ julia> Fruit.Banana
 Fruit.Banana = 1
 ```
 
-`Fruit` is a module -- the actual enum type is defined as `Fruit.Type`:
+`Fruit` is a module -- the actual enum type is defined as `Fruit.T` by default:
 
 ```julia
-julia> Fruit.Type
-Enum type Fruit.Type <: Enum{Int32} with 2 instances:
+julia> Fruit.T
+Enum type Fruit.T <: Enum{Int32} with 2 instances:
  Fruit.Apple  = 0
  Fruit.Banana = 1
 
-julia> Fruit.Type <: Base.Enum
+julia> Fruit.T <: Base.Enum
 true
+```
+
+Another typename can be passed as the first argument to `@enumx` as follows:
+
+```julia
+julia> @enumx T=FruitEnum Fruit Apple
+
+julia> Fruit.FruitEnum
+Enum type Fruit.FruitEnum <: Enum{Int32} with 1 instance:
+ Fruit.Apple = 0
 ```
 
 Since the only reserved name in the example above is the module `Fruit` we can create
@@ -52,8 +62,8 @@ YellowFruits.Banana = 0
 `@enumx` also allows for duplicate values:
 
 ```julia
-julia> Fruit.Type
-Enum type Fruit.Type <: Enum{Int32} with 2 instances:
+julia> Fruit.T
+Enum type Fruit.T <: Enum{Int32} with 2 instances:
  Fruit.Apple  = 1
  Fruit.Banana = 1
 
@@ -68,8 +78,8 @@ Fruit.Apple = Fruit.Banana = 1
 ```julia
 julia> @enumx Fruit Apple Banana Orange=Apple
 
-julia> Fruit.Type
-Enum type Fruit.Type <: Enum{Int32} with 3 instances:
+julia> Fruit.T
+Enum type Fruit.T <: Enum{Int32} with 3 instances:
  Fruit.Apple  = 0
  Fruit.Banana = 1
  Fruit.Orange = 0
@@ -89,8 +99,8 @@ Other than that, functionality should be comparable to `Base.@enum`:
    ```julia
    julia> @enumx Fruit Apple=4 Banana=(1 + 5) Orange
 
-   julia> Fruit.Type
-   Enum type Fruit.Type <: Enum{Int32} with 3 instances:
+   julia> Fruit.T
+   Enum type Fruit.T <: Enum{Int32} with 3 instances:
     Fruit.Apple  = 4
     Fruit.Banana = 6
     Fruit.Orange = 7
@@ -115,6 +125,8 @@ Other than that, functionality should be comparable to `Base.@enum`:
 **Related packages**
  - [CEnum.jl][CEnum]: C-compatible Enums.
  - [SuperEnum.jl][SuperEnum]: Similar approach as EnumX, but doesn't give you `Base.Enum`s.
+ - [NamespacedEnums.jl][NamespacedEnums]: Discontinued package similar to EnumX, which
+   gave me the idea to let user override the default `.T` typename.
 
 
 [at-enum]: https://docs.julialang.org/en/v1/base/base/#Base.Enums.@enum
@@ -123,3 +135,4 @@ Other than that, functionality should be comparable to `Base.@enum`:
 [discourse-3]: https://discourse.julialang.org/t/solving-the-drawbacks-of-enum/74506
 [CEnum]: https://github.com/JuliaInterop/CEnum.jl
 [SuperEnum]: https://github.com/kindlychung/SuperEnum.jl
+[NamespacedEnums]: https://github.com/christopher-dG/NamespacedEnums.jl

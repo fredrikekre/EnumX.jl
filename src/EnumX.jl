@@ -10,12 +10,21 @@ abstract type Enum{T} <: Base.Enum{T} end
 @noinline panic() = error("unreachable")
 
 macro enumx(args...)
-    return enumx(__module__, args...)
+    return enumx(__module__, Any[args...])
 end
 
 function symbol_map end
 
-function enumx(_module_, name, args...)
+function enumx(_module_, args)
+    T = :T
+    if length(args) > 1 && args[1] isa Expr && args[1].head === :(=) &&
+        length(args[1].args) == 2 && args[1].args[1] === :T &&
+        (args[1].args[2] isa Symbol || args[1].args[2] isa QuoteNode)
+        T = args[1].args[2]
+        T isa QuoteNode && (T = T.value)
+        popfirst!(args) # drop T=...
+    end
+    name = popfirst!(args)
     if name isa Symbol
         modname = name
         baseT = Int32
@@ -62,6 +71,9 @@ function enumx(_module_, name, args...)
         else
             panic("invalid EnumX.@enumx entry: $(s)")
         end
+        if sym === T
+            panic("instance name $(modname).$(sym) reserved for the Enum typename.")
+        end
         if (idx = findfirst(x -> x.first === sym, name_value_map); idx !== nothing)
             v = name_value_map[idx].second
             panic(
@@ -76,23 +88,23 @@ function enumx(_module_, name, args...)
     end
     value_name_map = Dict{baseT,Symbol}(v => k for (k, v) in reverse(name_value_map))
     module_block = quote
-        primitive type Type <: Enum{$(baseT)} $(sizeof(baseT) * 8) end
+        primitive type $(T) <: Enum{$(baseT)} $(sizeof(baseT) * 8) end
         let value_name_map = $(value_name_map)
             check_valid(x) = x in keys(value_name_map) ||
                 throw(ArgumentError("invalid value for Enum $($(QuoteNode(modname))): $(x)."))
-            global function $(esc(:Type))(x::Integer)
+            global function $(esc(T))(x::Integer)
                 check_valid(x)
-                return Base.bitcast($(esc(:Type)), convert($(baseT), x))
+                return Base.bitcast($(esc(T)), convert($(baseT), x))
             end
-            Base.Enums.namemap(::Base.Type{$(esc(:Type))}) = value_name_map
-            Base.Enums.instances(::Base.Type{$(esc(:Type))}) =
+            Base.Enums.namemap(::Base.Type{$(esc(T))}) = value_name_map
+            Base.Enums.instances(::Base.Type{$(esc(T))}) =
                 ($([esc(k) for (k,v) in name_value_map]...),)
-            EnumX.symbol_map(::Base.Type{$(esc(:Type))}) = $(name_value_map)
+            EnumX.symbol_map(::Base.Type{$(esc(T))}) = $(name_value_map)
         end
     end
     for (k, v) in name_value_map
         push!(module_block.args,
-            Expr(:const, Expr(:(=), esc(k), Expr(:call, esc(:Type), v)))
+            Expr(:const, Expr(:(=), esc(k), Expr(:call, esc(T), v)))
         )
     end
     return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), nothing)
