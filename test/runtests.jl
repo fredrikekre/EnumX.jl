@@ -62,7 +62,7 @@ end
 let io = IOBuffer()
     show(io, "text/plain", Fruit.Type)
     str = String(take!(io))
-    @test str == "Enum type Fruit.Type <: Enum{Int32} with 2 instances:\nFruit.Apple  = 0\nFruit.Banana = 1"
+    @test str == "Enum type Fruit.Type <: Enum{Int32} with 2 instances:\n Fruit.Apple  = 0\n Fruit.Banana = 1"
     show(io, "text/plain", Fruit.Apple)
     str = String(take!(io))
     @test str == "Fruit.Apple = 0"
@@ -183,7 +183,7 @@ end
 let io = IOBuffer()
     show(io, "text/plain", FruitDup.Type)
     str = String(take!(io))
-    @test str == "Enum type FruitDup.Type <: Enum{Int32} with 2 instances:\nFruitDup.Apple  = 0\nFruitDup.Banana = 0"
+    @test str == "Enum type FruitDup.Type <: Enum{Int32} with 2 instances:\n FruitDup.Apple  = 0\n FruitDup.Banana = 0"
     show(io, "text/plain", FruitDup.Apple)
     str = String(take!(io))
     @test str == "FruitDup.Apple = FruitDup.Banana = 0"

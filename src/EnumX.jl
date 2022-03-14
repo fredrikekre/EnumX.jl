@@ -115,7 +115,7 @@ function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
         "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s"):"
     )
     for (k, v) in stringmap
-        print(iob, "\n", rpad(k, mx), " = $(v)")
+        print(iob, "\n ", rpad(k, mx), " = $(v)")
     end
     write(io, seekstart(iob))
     return nothing
