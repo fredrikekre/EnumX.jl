@@ -213,7 +213,6 @@ end
 @test FruitT.Apple === FruitT.Typ(0)
 
 let io = IOBuffer()
-    io = IOBuffer()
     show(io, "text/plain", FruitT.Typ)
     str = String(take!(io))
     @test str == "Enum type FruitT.Typ <: Enum{Int32} with 2 instances:\n FruitT.Apple  = 0\n FruitT.Banana = 1"
@@ -234,5 +233,18 @@ catch err
     @test err isa ArgumentError
     @test err.msg == "instance name Fruit.Apple reserved for the Enum typename."
 end
+
+
+# Empty enum
+@enumx FruitEmpty
+@test instances(FruitEmpty.T) == ()
+let io = IOBuffer()
+    show(io, "text/plain", FruitEmpty.T)
+    str = String(take!(io))
+    @test str == "Enum type FruitEmpty.T <: Enum{Int32} with 0 instances"
+end
+
+@enumx T=Typ FruitEmptyT
+@test instances(FruitEmptyT.Typ) == ()
 
 end # testset

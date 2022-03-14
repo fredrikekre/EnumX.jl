@@ -132,7 +132,7 @@ function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
     mx = maximum(x -> textwidth(x.first), stringmap; init = 0)
     print(iob,
         "Enum type $(nameof(parentmodule(E))).$(nameof(E)) <: ",
-        "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s"):"
+        "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s")$(n>0 ? ":" : "")"
     )
     for (k, v) in stringmap
         print(iob, "\n ", rpad(k, mx), " = $(v)")
