@@ -1,5 +1,8 @@
 # EnumX.jl
 
+[![CI][gh-actions-img]][gh-actions-url]
+[![codecov][codecov-img]][codecov-url]
+
 This is what I wish [`Base.@enum`][at-enum] was.
 
 ## Usage
@@ -136,3 +139,10 @@ Other than that, functionality should be comparable to `Base.@enum`:
 [CEnum]: https://github.com/JuliaInterop/CEnum.jl
 [SuperEnum]: https://github.com/kindlychung/SuperEnum.jl
 [NamespacedEnums]: https://github.com/christopher-dG/NamespacedEnums.jl
+
+
+[gh-actions-img]: https://github.com/fredrikekre/EnumX.jl/actions/workflows/ci.yml/badge.svg?branch=master&event=push
+[gh-actions-url]: https://github.com/fredrikekre/EnumX.jl/actions/workflows/ci.yml
+
+[codecov-img]: https://codecov.io/gh/fredrikekre/EnumX.jl/branch/master/graph/badge.svg?token=K7C8OASVZR
+[codecov-url]: https://codecov.io/gh/fredrikekre/EnumX.jl
