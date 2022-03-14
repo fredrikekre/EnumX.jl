@@ -34,11 +34,12 @@ function enumx(_module_, name, args...)
     end
     name_value_map = Vector{Pair{Symbol, baseT}}()
     next = zero(baseT)
+    first = true
     for s in syms
         s isa LineNumberNode && continue
         local sym
         if s isa Symbol
-            if next == typemin(baseT)
+            if !first && next == typemin(baseT)
                 panic("value overflow for Enum $(modname): $(modname).$(s) = $(next).")
             end
             sym = s
@@ -71,6 +72,7 @@ function enumx(_module_, name, args...)
         push!(name_value_map, sym => next)
 
         next += oneunit(baseT)
+        first = false
     end
     value_name_map = Dict{baseT,Symbol}(v => k for (k, v) in reverse(name_value_map))
     module_block = quote

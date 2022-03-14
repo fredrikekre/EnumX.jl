@@ -80,6 +80,10 @@ end
 @test Base.Enums.basetype(Fruit8.Type) === Int8
 @test Integer(Fruit8.Apple) === Int8(0)
 
+@enumx FruitU8::UInt8 Apple # no overflow even if first is typemin(T)
+@test Base.Enums.basetype(FruitU8.Type) === UInt8
+@test FruitU8.Apple === FruitU8.Type(0)
+
 @enumx Fruit16::T16 Apple
 @test Fruit16.Type <: EnumX.Enum{Int16} <: Base.Enum{Int16}
 @test Base.Enums.basetype(Fruit16.Type) === Int16
