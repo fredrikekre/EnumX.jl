@@ -114,12 +114,12 @@ function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
     iob = IOBuffer()
     insts = Base.Enums.instances(E)
     n = length(insts)
-    stringmap = Dict{String, Int32}(
+    stringmap = Pair{String, Base.Enums.basetype(E)}[
         string("$(nameof(parentmodule(E))).", k) => v for (k, v) in symbol_map(E)
-    )
-    mx = maximum(textwidth, keys(stringmap); init = 0)
+    ]
+    mx = maximum(x -> textwidth(x.first), stringmap; init = 0)
     print(iob,
-        "Enum type $(nameof(parentmodule(E))).Type <: ",
+        "Enum type $(nameof(parentmodule(E))).$(nameof(E)) <: ",
         "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s"):"
     )
     for (k, v) in stringmap
