@@ -7,7 +7,6 @@ export @enumx
 abstract type Enum{T} <: Base.Enum{T} end
 
 @noinline panic(x) = throw(ArgumentError(x))
-@noinline panic() = error("unreachable")
 
 macro enumx(args...)
     return enumx(__module__, Any[args...])
@@ -46,7 +45,6 @@ function enumx(_module_, args)
     first = true
     for s in syms
         s isa LineNumberNode && continue
-        local sym
         if s isa Symbol
             if !first && next == typemin(baseT)
                 panic("value overflow for Enum $(modname): $(modname).$(s) = $(next).")
