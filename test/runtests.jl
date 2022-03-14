@@ -90,6 +90,7 @@ end
 
 try
     @macroexpand @enumx (Fr + uit) Apple
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
@@ -135,6 +136,7 @@ end
 
 try
     @macroexpand @enumx Fruit::Int8 Apple=typemax(Int8) Banana
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
@@ -142,6 +144,7 @@ catch err
 end
 try
     @macroexpand @enumx Fruit::Int8 Apple="apple"
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
@@ -149,6 +152,7 @@ catch err
 end
 try
     @macroexpand @enumx Fruit::Int8 Apple=128
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
@@ -156,24 +160,36 @@ catch err
 end
 try
     @macroexpand @enumx Fruit::Int8 Apple()
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
     @test err.msg == "invalid EnumX.@enumx entry: Apple()"
 end
 try
-    @macroexpand @enumx Fruit Apple=0 Banana=0
-catch err
-    err isa LoadError && (err = err.error)
-    @test err isa ArgumentError
-    @test err.msg == "duplicate value for Enum Fruit: Fruit.Banana = 0, value already used for Fruit.Apple = 0."
-end
-try
     @macroexpand @enumx Fruit Apple Apple
+    error()
 catch err
     err isa LoadError && (err = err.error)
     @test err isa ArgumentError
     @test err.msg == "duplicate name for Enum Fruit: Fruit.Apple = 1, name already used for Fruit.Apple = 0."
+end
+
+
+# Duplicate values
+@enumx FruitDup Apple=0 Banana=0
+@test FruitDup.Apple === FruitDup.Banana === FruitDup.Type(0)
+
+let io = IOBuffer()
+    show(io, "text/plain", FruitDup.Type)
+    str = String(take!(io))
+    @test str == "Enum type FruitDup.Type <: Enum{Int32} with 2 instances:\nFruitDup.Apple  = 0\nFruitDup.Banana = 0"
+    show(io, "text/plain", FruitDup.Apple)
+    str = String(take!(io))
+    @test str == "FruitDup.Apple = FruitDup.Banana = 0"
+    show(io, "text/plain", FruitDup.Banana)
+    str = String(take!(io))
+    @test str == "FruitDup.Apple = FruitDup.Banana = 0"
 end
 
 end # testset

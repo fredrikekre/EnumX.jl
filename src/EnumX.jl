@@ -6,11 +6,14 @@ export @enumx
 
 abstract type Enum{T} <: Base.Enum{T} end
 
-panic(x) = throw(ArgumentError(x))
+@noinline panic(x) = throw(ArgumentError(x))
+@noinline panic() = error("unreachable")
 
 macro enumx(args...)
     return enumx(__module__, args...)
 end
+
+function symbol_map end
 
 function enumx(_module_, name, args...)
     if name isa Symbol
@@ -29,7 +32,7 @@ function enumx(_module_, name, args...)
     else
         syms = args
     end
-    namemap = Dict{baseT,Symbol}()
+    name_value_map = Vector{Pair{Symbol, baseT}}()
     next = zero(baseT)
     for s in syms
         s isa LineNumberNode && continue
@@ -52,46 +55,51 @@ function enumx(_module_, name, args...)
         else
             panic("invalid EnumX.@enumx entry: $(s)")
         end
-        if next in keys(namemap)
-            panic(
-                "duplicate value for Enum $(modname): $(modname).$(sym) = $(next)," *
-                " value already used for $(modname).$(namemap[next]) = $(next)."
-            )
-        elseif sym in values(namemap)
-            value = findfirst(x -> x === sym, namemap)
+        if (idx = findfirst(x -> x.first === sym, name_value_map); idx !== nothing)
+            v = name_value_map[idx].second
             panic(
                 "duplicate name for Enum $(modname): $(modname).$(sym) = $(next)," *
-                " name already used for $(modname).$(namemap[value]) = $(value)."
+                " name already used for $(modname).$(sym) = $(v)."
             )
         end
-        namemap[next] = sym
+        push!(name_value_map, sym => next)
 
         next += oneunit(baseT)
     end
+    value_name_map = Dict{baseT,Symbol}(v => k for (k, v) in reverse(name_value_map))
     module_block = quote
         primitive type Type <: Enum{$(baseT)} $(sizeof(baseT) * 8) end
-        let namemap = $(namemap)
-            check_valid(x) = x in keys(namemap) ||
+        let value_name_map = $(value_name_map)
+            check_valid(x) = x in keys(value_name_map) ||
                 throw(ArgumentError("invalid value for Enum $($(QuoteNode(modname))): $(x)."))
             global function $(esc(:Type))(x::Integer)
                 check_valid(x)
                 return Base.bitcast($(esc(:Type)), convert($(baseT), x))
             end
-            Base.Enums.namemap(::Base.Type{$(esc(:Type))}) = namemap
+            Base.Enums.namemap(::Base.Type{$(esc(:Type))}) = value_name_map
             Base.Enums.instances(::Base.Type{$(esc(:Type))}) =
-                ($([esc(k) for k in values(namemap)]...),)
+                ($([esc(k) for (k,v) in name_value_map]...),)
+            EnumX.symbol_map(::Base.Type{$(esc(:Type))}) = $(name_value_map)
         end
     end
-    for (k, v) in namemap
+    for (k, v) in name_value_map
         push!(module_block.args,
-            Expr(:const, Expr(:(=), esc(v), Expr(:call, esc(:Type), k)))
+            Expr(:const, Expr(:(=), esc(k), Expr(:call, esc(:Type), v)))
         )
     end
     return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), nothing)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
-    print(io, "$(nameof(parentmodule(E))).$(Symbol(x)::Symbol) = $(Integer(x))")
+    iob = IOBuffer()
+    ix = Integer(x)
+    for (k, v) in symbol_map(E)
+        if v == ix
+            print(iob, "$(nameof(parentmodule(E))).$(k) = ")
+        end
+    end
+    print(iob, "$(Integer(x))")
+    write(io, seekstart(iob))
     return nothing
 end
 function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
@@ -99,7 +107,7 @@ function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
     insts = Base.Enums.instances(E)
     n = length(insts)
     stringmap = Dict{String, Int32}(
-        string("$(nameof(parentmodule(E))).", v) => k for (k, v) in Base.Enums.namemap(E)
+        string("$(nameof(parentmodule(E))).", k) => v for (k, v) in symbol_map(E)
     )
     mx = maximum(textwidth, keys(stringmap); init = 0)
     print(iob,
