@@ -43,7 +43,13 @@ function enumx(_module_, name, args...)
             end
             sym = s
         elseif s isa Expr && s.head === :(=) && s.args[1] isa Symbol && length(s.args) == 2
-            nx = Core.eval(_module_, s.args[2])
+            if s.args[2] isa Symbol &&
+               (i = findfirst(x -> x.first === s.args[2], name_value_map); i !== nothing)
+                @assert name_value_map[i].first === s.args[2]
+                nx = name_value_map[i].second
+            else
+                nx = Core.eval(_module_, s.args[2])
+            end
             if !(nx isa Integer && typemin(baseT) <= nx <= typemax(baseT))
                 panic(
                     "invalid value for Enum $(modname){$(baseT)}: " *

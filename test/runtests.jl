@@ -4,6 +4,8 @@ using EnumX, Test
 
 const T16 = Int16
 getInt64() = Int64
+const Elppa = -1
+const Ananab = -1
 
 @testset "EnumX" begin
 
@@ -191,5 +193,11 @@ let io = IOBuffer()
     str = String(take!(io))
     @test str == "FruitDup.Apple = FruitDup.Banana = 0"
 end
+
+
+# Initialize with previous instance name
+@enumx FruitPrev Elppa Banana=Elppa Orange=Ananab
+@test FruitPrev.Elppa === FruitPrev.Banana === FruitPrev.Type(0)
+@test FruitPrev.Orange === FruitPrev.Type(-1)
 
 end # testset
