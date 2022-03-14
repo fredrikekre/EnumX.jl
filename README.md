@@ -65,6 +65,8 @@ YellowFruits.Banana = 0
 `@enumx` also allows for duplicate values:
 
 ```julia
+julia> @enumx Fruit Apple=1 Banana=1
+
 julia> Fruit.T
 Enum type Fruit.T <: Enum{Int32} with 2 instances:
  Fruit.Apple  = 1
@@ -98,7 +100,8 @@ Other than that, functionality should be comparable to `Base.@enum`:
    UInt8
    ```
 
- - Specifying values (if not specified, defaults to the value of the previous instance + 1):
+ - Specifying values with literals or expressions (if not specified, defaults to the value
+   of the previous instance + 1):
    ```julia
    julia> @enumx Fruit Apple=4 Banana=(1 + 5) Orange
 
