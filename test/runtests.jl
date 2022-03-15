@@ -247,4 +247,57 @@ end
 @enumx T=Typ FruitEmptyT
 @test instances(FruitEmptyT.Typ) == ()
 
+
+# Documented type (module) and instances
+begin
+    """
+    Documentation for FruitDoc
+    """
+    @enumx FruitDoc begin
+        "Apple documentation."
+        Apple
+        """
+        Banana documentation
+        on multiple lines.
+        """
+        Banana = 2
+        Orange = Apple
+    end
+    @eval const LINENUMBER = $(@__LINE__)
+    @eval const FILENAME = $(@__FILE__)
+    @eval const MODULE = $(@__MODULE__)
+end
+
+function get_doc_metadata(mod, s)
+    Base.Docs.meta(mod)[Base.Docs.Binding(mod, s)].docs[Union{}].data
+end
+
+@test FruitDoc.Apple === FruitDoc.T(0)
+@test FruitDoc.Banana === FruitDoc.T(2)
+@test FruitDoc.Orange === FruitDoc.T(0)
+
+mod_doc = @doc(FruitDoc)
+@test sprint(show, mod_doc) == "Documentation for FruitDoc\n"
+mod_doc_data = get_doc_metadata(FruitDoc, :FruitDoc)
+@test mod_doc_data[:linenumber] == LINENUMBER - 13
+@test mod_doc_data[:path] == FILENAME
+@test mod_doc_data[:module] == MODULE
+
+apple_doc = @doc(FruitDoc.Apple)
+@test sprint(show, apple_doc) == "Apple documentation.\n"
+apple_doc_data = get_doc_metadata(FruitDoc, :Apple)
+@test apple_doc_data[:linenumber] == LINENUMBER - 9
+@test apple_doc_data[:path] == FILENAME
+@test apple_doc_data[:module] == FruitDoc
+
+banana_doc = @doc(FruitDoc.Banana)
+@test sprint(show, banana_doc) == "Banana documentation on multiple lines.\n"
+banana_doc_data = get_doc_metadata(FruitDoc, :Banana)
+@test banana_doc_data[:linenumber] == LINENUMBER - 7
+@test banana_doc_data[:path] == FILENAME
+@test banana_doc_data[:module] == FruitDoc
+
+orange_doc = @doc(FruitDoc.Orange)
+@test startswith(sprint(show, orange_doc), "No documentation found")
+
 end # testset

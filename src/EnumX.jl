@@ -39,10 +39,18 @@ function enumx(_module_, args)
         syms = args
     end
     name_value_map = Vector{Pair{Symbol, baseT}}()
+    doc_entries = Vector{Pair{Symbol,Expr}}()
     next = zero(baseT)
     first = true
     for s in syms
         s isa LineNumberNode && continue
+        # Handle doc expressions
+        doc_expr = nothing
+        if Meta.isexpr(s, :macrocall, 4) && s.args[1] isa GlobalRef && s.args[1].mod === Core &&
+               s.args[1].name === Symbol("@doc")
+            doc_expr = s
+            s = s.args[4]
+        end
         if s isa Symbol
             if !first && next == typemin(baseT)
                 panic("value overflow for Enum $(modname): $(modname).$(s) = $(next).")
@@ -78,6 +86,11 @@ function enumx(_module_, args)
             )
         end
         push!(name_value_map, sym => next)
+        if doc_expr !== nothing
+            # Replace the documented expression since it might be :(Apple = ...)
+            doc_expr.args[4] = sym
+            push!(doc_entries, sym => doc_expr)
+        end
 
         next += oneunit(baseT)
         first = false
@@ -103,7 +116,14 @@ function enumx(_module_, args)
             Expr(:const, Expr(:(=), esc(k), Expr(:call, esc(T), v)))
         )
     end
-    return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), nothing)
+    for (_, v) in doc_entries
+        push!(module_block.args, v)
+    end
+    # Document the module and the type
+    mdoc = Expr(:block, Expr(:meta, :doc), esc(modname))
+    # TODO: Attach to the type too?
+    # Tdoc = Expr(:block, Expr(:meta, :doc), Expr(:., esc(modname), QuoteNode(T)))
+    return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), mdoc, #=Tdoc,=# nothing)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum

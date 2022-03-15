@@ -56,13 +56,30 @@ Since the only reserved name in the example above is the module `Fruit` we can c
 another enum with overlapping instance names (this would not be possible with `Base.@enum`):
 
 ```julia
-julia> @enumx YellowFruits Banana Lemon
+julia> @enumx YellowFruit Banana Lemon
 
-julia> YellowFruits.Banana
-YellowFruits.Banana = 0
+julia> YellowFruit.Banana
+YellowFruit.Banana = 0
 ```
 
-`@enumx` also allows for duplicate values:
+Instances can be documented like `struct` fields. A docstring before the macro is
+attached to the *module* `Fruit` (i.e. not the "hidden" type `Fruit.T`):
+
+```julia
+julia> "Documentation for Fruit enum-module."
+       @enumx Fruit begin
+           "Documentation for Fruit.Apple instance."
+           Apple
+       end
+
+help?> Fruit
+  Documentation for Fruit enum-module.
+
+help?> Fruit.Apple
+  Documentation for Fruit.Apple instance.
+```
+
+`@enumx` allows for duplicate values (unlike `Base.@enum`):
 
 ```julia
 julia> @enumx Fruit Apple=1 Banana=1
@@ -79,7 +96,8 @@ julia> Fruit.Banana
 Fruit.Apple = Fruit.Banana = 1
 ```
 
-`@enumx` also lets you use previous enum names for value initialization:
+`@enumx` lets you use previous enum names for value initialization:
+
 ```julia
 julia> @enumx Fruit Apple Banana Orange=Apple
 
