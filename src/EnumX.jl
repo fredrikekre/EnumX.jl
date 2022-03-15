@@ -16,9 +16,8 @@ function symbol_map end
 
 function enumx(_module_, args)
     T = :T
-    if length(args) > 1 && args[1] isa Expr && args[1].head === :(=) &&
-        length(args[1].args) == 2 && args[1].args[1] === :T &&
-        (args[1].args[2] isa Symbol || args[1].args[2] isa QuoteNode)
+    if length(args) > 1 && Meta.isexpr(args[1], :(=), 2) && args[1].args[1] === :T &&
+       (args[1].args[2] isa Symbol || args[1].args[2] isa QuoteNode)
         T = args[1].args[2]
         T isa QuoteNode && (T = T.value)
         popfirst!(args) # drop T=...
@@ -27,15 +26,14 @@ function enumx(_module_, args)
     if name isa Symbol
         modname = name
         baseT = Int32
-    elseif name isa Expr && name.head == :(::) && name.args[1] isa Symbol &&
-           length(name.args) == 2
+    elseif Meta.isexpr(name, :(::), 2) && name.args[1] isa Symbol
         modname = name.args[1]
         baseT = Core.eval(_module_, name.args[2])
     else
         panic("invalid EnumX.@enumx type specification: $(name).")
     end
     name = modname
-    if length(args) == 1 && args[1] isa Expr && args[1].head === :block
+    if length(args) == 1 && Meta.isexpr(args[1], :block)
         syms = args[1].args
     else
         syms = args
@@ -50,7 +48,7 @@ function enumx(_module_, args)
                 panic("value overflow for Enum $(modname): $(modname).$(s) = $(next).")
             end
             sym = s
-        elseif s isa Expr && s.head === :(=) && s.args[1] isa Symbol && length(s.args) == 2
+        elseif Meta.isexpr(s, :(=), 2) && s.args[1] isa Symbol
             if s.args[2] isa Symbol &&
                (i = findfirst(x -> x.first === s.args[2], name_value_map); i !== nothing)
                 @assert name_value_map[i].first === s.args[2]
