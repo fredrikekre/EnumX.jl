@@ -86,9 +86,21 @@ end
 @test Base.Enums.basetype(Fruit8.T) === Int8
 @test Integer(Fruit8.Apple) === Int8(0)
 
-@enumx FruitU8::UInt8 Apple # no overflow even if first is typemin(T)
+@enumx FruitU8::UInt8 Apple Banana # no overflow even if first is typemin(T)
 @test Base.Enums.basetype(FruitU8.T) === UInt8
 @test FruitU8.Apple === FruitU8.T(0)
+
+let io = IOBuffer()
+    show(io, "text/plain", FruitU8.T)
+    str = String(take!(io))
+    @test str == "Enum type FruitU8.T <: Enum{UInt8} with 2 instances:\n FruitU8.Apple  = 0x00\n FruitU8.Banana = 0x01"
+    show(io, "text/plain", FruitU8.Apple)
+    str = String(take!(io))
+    @test str == "FruitU8.Apple = 0x00"
+    show(io, "text/plain", FruitU8.Banana)
+    str = String(take!(io))
+    @test str == "FruitU8.Banana = 0x01"
+end
 
 @enumx Fruit16::T16 Apple
 @test Fruit16.T <: EnumX.Enum{Int16} <: Base.Enum{Int16}

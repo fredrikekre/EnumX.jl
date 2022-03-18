@@ -134,7 +134,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
             print(iob, "$(nameof(parentmodule(E))).$(k) = ")
         end
     end
-    print(iob, "$(Integer(x))")
+    show(iob, ix)
     write(io, seekstart(iob))
     return nothing
 end
@@ -155,7 +155,8 @@ function Base.show(io::IO, ::MIME"text/plain", ::Type{E}) where E <: Enum
         "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s")$(n>0 ? ":" : "")"
     )
     for (k, v) in stringmap
-        print(iob, "\n ", rpad(k, mx), " = $(v)")
+        print(iob, "\n ", rpad(k, mx), " = ")
+        show(iob, v)
     end
     write(io, seekstart(iob))
     return nothing

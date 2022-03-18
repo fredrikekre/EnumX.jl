@@ -1,6 +1,6 @@
 name = "EnumX"
 uuid = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
-version = "1.0.1"
+version = "1.0.2"
 
 [compat]
 julia = "1.6"
