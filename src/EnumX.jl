@@ -138,7 +138,11 @@ function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
     write(io, seekstart(iob))
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", ::Base.Type{E}) where E <: Enum
+function Base.show(io::IO, ::MIME"text/plain", ::Type{E}) where E <: Enum
+    if !isconcretetype(E) # handle EnumX.Enum and EnumX.Enum{T}
+        invoke(show, Tuple{IO, Type}, io, E)
+        return
+    end
     iob = IOBuffer()
     insts = Base.Enums.instances(E)
     n = length(insts)

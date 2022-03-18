@@ -71,6 +71,12 @@ let io = IOBuffer()
     show(io, "text/plain", Fruit.Banana)
     str = String(take!(io))
     @test str == "Fruit.Banana = 1"
+    show(io, "text/plain", EnumX.Enum)
+    str = String(take!(io))
+    @test str == "EnumX.Enum"
+    show(io, "text/plain", EnumX.Enum{Int32})
+    str = String(take!(io))
+    @test str == "EnumX.Enum{Int32}"
 end
 
 
