@@ -52,6 +52,16 @@ Enum type Fruit.FruitEnum <: Enum{Int32} with 1 instance:
  Fruit.Apple = 0
 ```
 
+Since the instances are scoped into a module, tab-completion is obtained "for free",
+which helps a lot with discoverability of the instance names:
+
+```julia
+julia> @enumx Fruit Apple Banana
+
+julia> Fruit.<TAB>
+Apple Banana T
+```
+
 Since the only reserved name in the example above is the module `Fruit` we can create
 another enum with overlapping instance names (this would not be possible with `Base.@enum`):
 
