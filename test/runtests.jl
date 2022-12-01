@@ -266,6 +266,16 @@ end
 @test instances(FruitEmptyT.Typ) == ()
 
 
+# Showing invalid instances
+@enumx Invalid A
+let io = IOBuffer()
+    invalid = Base.bitcast(Invalid.T, Int32(1))
+    show(io, "text/plain", invalid)
+    str = String(take!(io))
+    @test str == "Invalid.#invalid# = 1"
+end
+
+
 # Documented type (module) and instances
 begin
     """

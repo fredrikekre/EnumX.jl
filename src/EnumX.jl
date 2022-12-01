@@ -151,10 +151,15 @@ end
 function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
     iob = IOBuffer()
     ix = Integer(x)
+    found = false
     for (k, v) in symbol_map(E)
         if v == ix
             print(iob, "$(nameof(parentmodule(E))).$(k) = ")
+            found = true
         end
+    end
+    if !found
+        print(iob, "$(nameof(parentmodule(E))).#invalid# = ")
     end
     show(iob, ix)
     write(io, seekstart(iob))
