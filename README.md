@@ -1,9 +1,11 @@
 # EnumX.jl
 
-[![CI][gh-actions-img]][gh-actions-url]
-[![codecov][codecov-img]][codecov-url]
+[![CI](https://github.com/fredrikekre/EnumX.jl/actions/workflows/CI.yml/badge.svg?branch=master&event=push)](https://github.com/fredrikekre/EnumX.jl/actions/workflows/CI.yml)
+[![Codecov](https://codecov.io/gh/fredrikekre/EnumX.jl/branch/master/graph/badge.svg?token=K7C8OASVZR)](https://codecov.io/gh/fredrikekre/EnumX.jl)
+[![code style: runic](https://img.shields.io/badge/code_style-%E1%9A%B1%E1%9A%A2%E1%9A%BE%E1%9B%81%E1%9A%B2-black)](https://github.com/fredrikekre/Runic.jl)
 
-This is what I wish [`Base.@enum`][at-enum] was.
+This is what I wish
+[`Base.@enum`](https://docs.julialang.org/en/v1/base/base/#Base.Enums.@enum) was.
 
 ## Usage
 
@@ -152,28 +154,14 @@ Other than that, functionality should be comparable to `Base.@enum`:
 ## See also
 
 **Community discussions**
- - [Encapsulating enum access via dot syntax][discourse-1]
- - [Can not reuse enum member in different member][discourse-2]
- - [Solving the drawbacks of `@enum`][discourse-3]
+ - [Encapsulating enum access via dot syntax](https://discourse.julialang.org/t/encapsulating-enum-access-via-dot-syntax/11785)
+ - [Can not reuse enum member in different member](https://discourse.julialang.org/t/cannot-reuse-enum-member-in-different-enum/21342)
+ - [Solving the drawbacks of `@enum`](https://discourse.julialang.org/t/solving-the-drawbacks-of-enum/74506)
 
 **Related packages**
- - [CEnum.jl][CEnum]: C-compatible Enums.
- - [SuperEnum.jl][SuperEnum]: Similar approach as EnumX, but doesn't give you `Base.Enum`s.
- - [NamespacedEnums.jl][NamespacedEnums]: Discontinued package similar to EnumX, which
-   gave me the idea to let user override the default `.T` typename.
-
-
-[at-enum]: https://docs.julialang.org/en/v1/base/base/#Base.Enums.@enum
-[discourse-1]: https://discourse.julialang.org/t/encapsulating-enum-access-via-dot-syntax/11785
-[discourse-2]: https://discourse.julialang.org/t/cannot-reuse-enum-member-in-different-enum/21342
-[discourse-3]: https://discourse.julialang.org/t/solving-the-drawbacks-of-enum/74506
-[CEnum]: https://github.com/JuliaInterop/CEnum.jl
-[SuperEnum]: https://github.com/kindlychung/SuperEnum.jl
-[NamespacedEnums]: https://github.com/christopher-dG/NamespacedEnums.jl
-
-
-[gh-actions-img]: https://github.com/fredrikekre/EnumX.jl/actions/workflows/ci.yml/badge.svg?branch=master&event=push
-[gh-actions-url]: https://github.com/fredrikekre/EnumX.jl/actions/workflows/ci.yml
-
-[codecov-img]: https://codecov.io/gh/fredrikekre/EnumX.jl/branch/master/graph/badge.svg?token=K7C8OASVZR
-[codecov-url]: https://codecov.io/gh/fredrikekre/EnumX.jl
+ - [CEnum.jl](https://github.com/JuliaInterop/CEnum.jl): C-compatible Enums.
+ - [SuperEnum.jl](https://github.com/kindlychung/SuperEnum.jl): Similar approach as EnumX,
+   but doesn't give you `Base.Enum`s.
+ - [NamespacedEnums.jl](https://github.com/christopher-dG/NamespacedEnums.jl): Discontinued
+   package similar to EnumX, which gave me the idea to let user override the default `.T`
+   typename.
