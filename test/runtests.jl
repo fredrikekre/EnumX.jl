@@ -2,6 +2,9 @@
 
 using EnumX, Test
 
+# Needed to "render" docstrings, see https://github.com/JuliaLang/julia/issues/54664
+import REPL
+
 const T16 = Int16
 getInt64() = Int64
 const Elppa = -1
