@@ -39,7 +39,7 @@ function symbol_map end
 function enumx(_module_, args)
     T = :T
     if length(args) > 1 && Meta.isexpr(args[1], :(=), 2) && args[1].args[1] === :T &&
-       (args[1].args[2] isa Symbol || args[1].args[2] isa QuoteNode)
+            (args[1].args[2] isa Symbol || args[1].args[2] isa QuoteNode)
         T = args[1].args[2]
         T isa QuoteNode && (T = T.value)
         popfirst!(args) # drop T=...
@@ -61,7 +61,7 @@ function enumx(_module_, args)
         syms = args
     end
     name_value_map = Vector{Pair{Symbol, baseT}}()
-    doc_entries = Vector{Pair{Symbol,Expr}}()
+    doc_entries = Vector{Pair{Symbol, Expr}}()
     next = zero(baseT)
     first = true
     for s in syms
@@ -69,7 +69,7 @@ function enumx(_module_, args)
         # Handle doc expressions
         doc_expr = nothing
         if Meta.isexpr(s, :macrocall, 4) && s.args[1] isa GlobalRef && s.args[1].mod === Core &&
-               s.args[1].name === Symbol("@doc")
+                s.args[1].name === Symbol("@doc")
             doc_expr = s
             s = s.args[4]
         end
@@ -80,7 +80,7 @@ function enumx(_module_, args)
             sym = s
         elseif Meta.isexpr(s, :(=), 2) && s.args[1] isa Symbol
             if s.args[2] isa Symbol &&
-               (i = findfirst(x -> x.first === s.args[2], name_value_map); i !== nothing)
+                    (i = findfirst(x -> x.first === s.args[2], name_value_map); i !== nothing)
                 @assert name_value_map[i].first === s.args[2]
                 nx = name_value_map[i].second
             else
@@ -89,7 +89,7 @@ function enumx(_module_, args)
             if !(nx isa Integer && typemin(baseT) <= nx <= typemax(baseT))
                 panic(
                     "invalid value for Enum $(modname){$(baseT)}: " *
-                    "$(modname).$(s.args[1]) = $(repr(nx))."
+                        "$(modname).$(s.args[1]) = $(repr(nx))."
                 )
             end
             next = convert(baseT, nx)
@@ -104,7 +104,7 @@ function enumx(_module_, args)
             v = name_value_map[idx].second
             panic(
                 "duplicate name for Enum $(modname): $(modname).$(sym) = $(next)," *
-                " name already used for $(modname).$(sym) = $(v)."
+                    " name already used for $(modname).$(sym) = $(v)."
             )
         end
         push!(name_value_map, sym => next)
@@ -117,7 +117,7 @@ function enumx(_module_, args)
         next += oneunit(baseT)
         first = false
     end
-    value_name_map = Dict{baseT,Symbol}(v => k for (k, v) in reverse(name_value_map))
+    value_name_map = Dict{baseT, Symbol}(v => k for (k, v) in reverse(name_value_map))
     module_block = quote
         primitive type $(T) <: Enum{$(baseT)} $(sizeof(baseT) * 8) end
         let value_name_map = $(value_name_map)
@@ -129,12 +129,13 @@ function enumx(_module_, args)
             end
             Base.Enums.namemap(::Base.Type{$(esc(T))}) = value_name_map
             Base.Enums.instances(::Base.Type{$(esc(T))}) =
-                ($([esc(k) for (k,v) in name_value_map]...),)
+                ($([esc(k) for (k, v) in name_value_map]...),)
             EnumX.symbol_map(::Base.Type{$(esc(T))}) = $(name_value_map)
         end
     end
     for (k, v) in name_value_map
-        push!(module_block.args,
+        push!(
+            module_block.args,
             Expr(:const, Expr(:(=), esc(k), Expr(:call, esc(T), v)))
         )
     end
@@ -148,7 +149,7 @@ function enumx(_module_, args)
     return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), mdoc, #=Tdoc,=# nothing)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
+function Base.show(io::IO, ::MIME"text/plain", x::E) where {E <: Enum}
     iob = IOBuffer()
     ix = Integer(x)
     found = false
@@ -165,7 +166,7 @@ function Base.show(io::IO, ::MIME"text/plain", x::E) where E <: Enum
     write(io, seekstart(iob))
     return nothing
 end
-function Base.show(io::IO, ::MIME"text/plain", ::Type{E}) where E <: Enum
+function Base.show(io::IO, ::MIME"text/plain", ::Type{E}) where {E <: Enum}
     if !isconcretetype(E) # handle EnumX.Enum and EnumX.Enum{T}
         invoke(show, Tuple{IO, Type}, io, E)
         return
@@ -177,9 +178,10 @@ function Base.show(io::IO, ::MIME"text/plain", ::Type{E}) where E <: Enum
         string("$(nameof(parentmodule(E))).", k) => v for (k, v) in symbol_map(E)
     ]
     mx = maximum(x -> textwidth(x.first), stringmap; init = 0)
-    print(iob,
+    print(
+        iob,
         "Enum type $(nameof(parentmodule(E))).$(nameof(E)) <: ",
-        "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s")$(n>0 ? ":" : "")"
+        "Enum{$(Base.Enums.basetype(E))} with $(n) instance$(n == 1 ? "" : "s")$(n > 0 ? ":" : "")"
     )
     for (k, v) in stringmap
         print(iob, "\n ", rpad(k, mx), " = ")
