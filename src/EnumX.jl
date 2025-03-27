@@ -133,6 +133,12 @@ function enumx(_module_, args)
             EnumX.symbol_map(::Base.Type{$(esc(T))}) = $(name_value_map)
         end
     end
+    if VERSION >= v"1.11"
+        push!(
+            module_block.args,
+            esc(Expr(:public, values(value_name_map)...))
+        )
+    end
     for (k, v) in name_value_map
         push!(
             module_block.args,
