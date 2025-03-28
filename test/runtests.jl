@@ -16,7 +16,6 @@ const Ananab = -1
     @enumx Fruit Apple Banana
 
     @test Fruit isa Module
-    @test Set(names(Fruit)) == Set([:Fruit])
     @test_broken Set(names(Fruit; all = true)) == Set([:Fruit, :Apple, :Banana, :T])
     @test issubset(Set([:Fruit, :Apple, :Banana, :T]), Set(names(Fruit; all = true)))
     @test Fruit.T <: EnumX.Enum{Int32} <: Base.Enum{Int32}
@@ -47,6 +46,15 @@ const Ananab = -1
     @test Fruit.T(Int32(1)) === Fruit.T(1) === Fruit.Banana
     @test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.T(Int32(123))
     @test_throws ArgumentError("invalid value for Enum Fruit: 123.") Fruit.T(123)
+
+    # Public enum member values (#11)
+    if VERSION >= v"1.11.0-DEV.469"
+        @test Set(names(Fruit)) == Set([:Fruit, :Apple, :Banana])
+        @test Base.ispublic(Fruit, :Apple)
+        @test Base.ispublic(Fruit, :Banana)
+    else
+        @test Set(names(Fruit)) == Set([:Fruit])
+    end
 
     @test Fruit.Apple < Fruit.Banana
 
