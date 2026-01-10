@@ -49,7 +49,8 @@ const Ananab = -1
 
     # Public enum member values (#11)
     if VERSION >= v"1.11.0-DEV.469"
-        @test Set(names(Fruit)) == Set([:Fruit, :Apple, :Banana])
+        @test Set(names(Fruit)) == Set([:Fruit, :T, :Apple, :Banana])
+        @test Base.ispublic(Fruit, :T)
         @test Base.ispublic(Fruit, :Apple)
         @test Base.ispublic(Fruit, :Banana)
     else
@@ -241,6 +242,12 @@ const Ananab = -1
     @test FruitT.Typ <: EnumX.Enum
     @test FruitT.Apple === FruitT.Typ(0)
 
+    # Custom typename is public
+    if VERSION >= v"1.11.0-DEV.469"
+        @test Base.ispublic(FruitT, :Typ)
+        @test !Base.ispublic(FruitT, :T)
+    end
+
     let io = IOBuffer()
         show(io, "text/plain", FruitT.Typ)
         str = String(take!(io))
@@ -253,6 +260,12 @@ const Ananab = -1
     @test !isdefined(FruitST, :T)
     @test FruitST.Typ <: EnumX.Enum
     @test FruitST.Apple === FruitST.Typ(0)
+
+    # Custom typename is public
+    if VERSION >= v"1.11.0-DEV.469"
+        @test Base.ispublic(FruitST, :Typ)
+        @test !Base.ispublic(FruitST, :T)
+    end
 
     try
         @macroexpand @enumx T = Apple Fruit Apple

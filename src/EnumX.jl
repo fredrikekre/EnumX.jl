@@ -136,7 +136,7 @@ function enumx(_module_, args)
     if VERSION >= v"1.11.0-DEV.469"
         push!(
             module_block.args,
-            esc(Expr(:public, values(value_name_map)...))
+            esc(Expr(:public, T, values(value_name_map)...))
         )
     end
     for (k, v) in name_value_map
