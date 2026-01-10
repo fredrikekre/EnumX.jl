@@ -343,7 +343,11 @@ const Ananab = -1
     @test apple_doc_data[:module] == FruitDoc
 
     banana_doc = @doc(FruitDoc.Banana)
-    @test sprint(show, banana_doc) == "Banana documentation on multiple lines.\n"
+    @test sprint(show, banana_doc) in (
+        # Different Julia versions handle markdown newlines differently (JuliaLang/julia#60593)
+        "Banana documentation on multiple lines.\n",
+        "Banana documentation\non multiple lines.\n",
+    )
     banana_doc_data = get_doc_metadata(FruitDoc, :Banana)
     @test banana_doc_data[:linenumber] == LINENUMBER - 7
     @test banana_doc_data[:path] == FILENAME
