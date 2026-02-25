@@ -228,6 +228,13 @@ const Ananab = -1
         @test str == "FruitDup.Apple = FruitDup.Banana = 0"
     end
 
+    # Aliased names are public
+    if VERSION >= v"1.11.0-DEV.469"
+        @test Base.ispublic(FruitDup, :Apple)
+        @test Base.ispublic(FruitDup, :Banana)
+        @test Set(names(FruitDup)) == Set([:FruitDup, :T, :Apple, :Banana])
+    end
+
 
     # Initialize with previous instance name
     @enumx FruitPrev Elppa Banana = Elppa Orange = Ananab
