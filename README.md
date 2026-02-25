@@ -151,6 +151,34 @@ Other than that, functionality should be comparable to `Base.@enum`:
           end
    ```
 
+### Example
+
+Here is a (contrived) example combining all of the features listed above:
+
+```julia
+julia> "This documents `Fruits`"
+       @enumx T=Fruit Fruits::Int16 begin
+           Apple  = 2
+           "This documents `Fruits.Banana`"
+           Banana = Apple
+           Lemon = 10 ÷ 2
+       end
+
+julia> Fruits.Fruit
+Enum type Fruits.Fruit <: Enum{Int16} with 3 instances:
+ Fruits.Apple  = 2
+ Fruits.Banana = 2
+ Fruits.Lemon  = 5
+
+help?> Fruits
+
+  This documents Fruits
+
+help?> Fruits.Banana
+
+  This documents Fruits.Banana
+```
+
 ## See also
 
 **Community discussions**
