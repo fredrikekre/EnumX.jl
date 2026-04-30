@@ -125,7 +125,7 @@ function enumx(_module_, args)
                 throw(ArgumentError("invalid value for Enum $($(QuoteNode(modname))): $(x)."))
             global function $(esc(T))(x::Integer)
                 check_valid(x)
-                return Base.bitcast($(esc(T)), convert($(baseT), x))
+                return reinterpret($(esc(T)), convert($(baseT), x))
             end
             Base.Enums.namemap(::Base.Type{$(esc(T))}) = value_name_map
             Base.Enums.instances(::Base.Type{$(esc(T))}) =
