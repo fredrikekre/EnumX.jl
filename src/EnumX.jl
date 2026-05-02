@@ -155,6 +155,23 @@ function enumx(_module_, args)
     return Expr(:toplevel, Expr(:module, false, esc(modname), module_block), mdoc, #=Tdoc,=# nothing)
 end
 
+# Base's fallback `show` for `Enum` qualifies the instance name with the full
+# module path (e.g. `Main.Fruit.Apple`) by default, but drops the qualifier when
+# `IOContext` has `:compact => true` or when the bare symbol is visible from
+# `:module`. Neither matches `EnumX`'s `Module.Name` convention (which is what
+# the 3-arg show emits, see below). Override here to keep the form consistent
+# and round-trippable across all contexts.
+function Base.show(io::IO, x::E) where {E <: Enum}
+    ix = Integer(x)
+    for (k, v) in symbol_map(E)
+        if v == ix
+            print(io, nameof(parentmodule(E)), '.', k)
+            return nothing
+        end
+    end
+    print(io, nameof(parentmodule(E)), ".#invalid#")
+    return nothing
+end
 function Base.show(io::IO, ::MIME"text/plain", x::E) where {E <: Enum}
     iob = IOBuffer()
     ix = Integer(x)
